@@ -33,6 +33,11 @@ router.get('/', async (req, res) => {
     
     let query = supabase.from('products').select('*')
 
+    // Exclude archived products by default
+    if (req.query.includeArchived !== 'true') {
+      query = query.neq('status', 'archived')
+    }
+
     // Apply filters
     if (req.query.gender) {
       query = query.eq('gender', req.query.gender)
@@ -134,7 +139,7 @@ router.get('/:id', async (req, res) => {
 
     if (error) throw error
 
-    if (!data) {
+    if (!data || data.status === 'archived') {
       return res.status(404).json({ success: false, message: 'Product not found' })
     }
 

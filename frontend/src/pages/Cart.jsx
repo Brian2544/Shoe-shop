@@ -3,13 +3,14 @@ import { motion } from 'framer-motion'
 import { useStore } from '../store/store'
 import { Trash2, Plus, Minus, ShoppingBag } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { formatCurrency, FREE_SHIPPING_THRESHOLD, SHIPPING_FEE } from '../lib/currency'
 
 const Cart = () => {
   const { cart, removeFromCart, updateCartItem, clearCart } = useStore()
   const navigate = useNavigate()
 
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
-  const shipping = subtotal > 100 ? 0 : 10
+  const shipping = subtotal > FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FEE
   const tax = subtotal * 0.08
   const total = subtotal + shipping + tax
 
@@ -106,10 +107,10 @@ const Cart = () => {
                     </div>
                     <div className="text-right">
                       <p className="text-xl font-bold text-primary-orange">
-                        ${(item.price * item.quantity).toFixed(2)}
+                        {formatCurrency(item.price * item.quantity)}
                       </p>
                       {item.quantity > 1 && (
-                        <p className="text-sm text-gray-500">${item.price} each</p>
+                        <p className="text-sm text-gray-500">{formatCurrency(item.price)} each</p>
                       )}
                     </div>
                   </div>
@@ -138,7 +139,7 @@ const Cart = () => {
               <div className="space-y-3 mb-6">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Subtotal</span>
-                  <span className="font-semibold">${subtotal.toFixed(2)}</span>
+                  <span className="font-semibold">{formatCurrency(subtotal)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Shipping</span>
@@ -146,22 +147,22 @@ const Cart = () => {
                     {shipping === 0 ? (
                       <span className="text-secondary-green">Free</span>
                     ) : (
-                      `$${shipping.toFixed(2)}`
+                      formatCurrency(shipping)
                     )}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Tax</span>
-                  <span className="font-semibold">${tax.toFixed(2)}</span>
+                  <span className="font-semibold">{formatCurrency(tax)}</span>
                 </div>
-                {subtotal < 100 && (
+                {subtotal < FREE_SHIPPING_THRESHOLD && (
                   <p className="text-sm text-secondary-green">
-                    Add ${(100 - subtotal).toFixed(2)} more for free shipping!
+                    Add {formatCurrency(FREE_SHIPPING_THRESHOLD - subtotal)} more for free shipping!
                   </p>
                 )}
                 <div className="border-t pt-3 flex justify-between text-lg font-bold">
                   <span>Total</span>
-                  <span className="text-primary-orange">${total.toFixed(2)}</span>
+                  <span className="text-primary-orange">{formatCurrency(total)}</span>
                 </div>
               </div>
 

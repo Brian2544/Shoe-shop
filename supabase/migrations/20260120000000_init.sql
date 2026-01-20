@@ -1,42 +1,10 @@
--- Products Table
-CREATE TABLE IF NOT EXISTS products (
+-- Categories Table
+CREATE TABLE IF NOT EXISTS categories (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name VARCHAR(255) NOT NULL,
-  brand VARCHAR(100),
-  description TEXT,
-  price DECIMAL(10, 2) NOT NULL,
-  original_price DECIMAL(10, 2),
-  currency_code TEXT DEFAULT 'KES',
-  images TEXT[],
-  gender VARCHAR(20),
-  shoe_type VARCHAR(50),
-  sizes TEXT[],
-  colors TEXT[],
-  material VARCHAR(100),
-  stock_quantity INTEGER DEFAULT 0,
-  status TEXT DEFAULT 'active',
-  category_id UUID REFERENCES categories(id),
-  rating DECIMAL(3, 2) DEFAULT 0,
-  review_count INTEGER DEFAULT 0,
-  sales_count INTEGER DEFAULT 0,
-  featured BOOLEAN DEFAULT false,
-  care_instructions TEXT,
+  name TEXT NOT NULL,
+  slug TEXT UNIQUE NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- Product Images Table
-CREATE TABLE IF NOT EXISTS product_images (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  product_id UUID REFERENCES products(id) ON DELETE CASCADE,
-  url TEXT NOT NULL,
-  public_id TEXT NOT NULL,
-  alt_text TEXT,
-  position INTEGER DEFAULT 0,
-  width INTEGER,
-  height INTEGER,
-  format TEXT,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Users/Profiles Table (extends Supabase auth.users)
@@ -70,13 +38,44 @@ CREATE TABLE IF NOT EXISTS user_roles (
   UNIQUE (user_id, role_id)
 );
 
--- Categories Table
-CREATE TABLE IF NOT EXISTS categories (
+-- Products Table
+CREATE TABLE IF NOT EXISTS products (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name TEXT NOT NULL,
-  slug TEXT UNIQUE NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  brand VARCHAR(100),
+  description TEXT,
+  price DECIMAL(10, 2) NOT NULL,
+  original_price DECIMAL(10, 2),
+  images TEXT[],
+  gender VARCHAR(20),
+  shoe_type VARCHAR(50),
+  sizes TEXT[],
+  colors TEXT[],
+  material VARCHAR(100),
+  stock_quantity INTEGER DEFAULT 0,
+  status TEXT DEFAULT 'active',
+  category_id UUID REFERENCES categories(id),
+  rating DECIMAL(3, 2) DEFAULT 0,
+  review_count INTEGER DEFAULT 0,
+  sales_count INTEGER DEFAULT 0,
+  featured BOOLEAN DEFAULT false,
+  care_instructions TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Product Images Table
+CREATE TABLE IF NOT EXISTS product_images (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  product_id UUID REFERENCES products(id) ON DELETE CASCADE,
+  url TEXT NOT NULL,
+  public_id TEXT NOT NULL,
+  alt_text TEXT,
+  position INTEGER DEFAULT 0,
+  width INTEGER,
+  height INTEGER,
+  format TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Addresses Table
@@ -111,7 +110,6 @@ CREATE TABLE IF NOT EXISTS orders (
   subtotal DECIMAL(10, 2) NOT NULL,
   tax DECIMAL(10, 2) DEFAULT 0,
   shipping_cost DECIMAL(10, 2) DEFAULT 0,
-  currency_code TEXT DEFAULT 'KES',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -123,7 +121,6 @@ CREATE TABLE IF NOT EXISTS order_items (
   product_id UUID REFERENCES products(id),
   qty INTEGER NOT NULL DEFAULT 1,
   unit_price DECIMAL(10, 2) NOT NULL,
-  currency_code TEXT DEFAULT 'KES',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 

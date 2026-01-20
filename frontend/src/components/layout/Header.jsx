@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { useStore } from '../../store/store'
 import { supabase } from '../../lib/supabase'
+import { formatCurrency, FREE_SHIPPING_THRESHOLD } from '../../lib/currency'
 import { 
   ShoppingCart, 
   Heart, 
@@ -21,7 +22,9 @@ const Header = () => {
   try {
     store = useStore()
   } catch (error) {
-    console.warn('Error accessing store:', error)
+    if (import.meta.env.DEV) {
+      console.warn('Error accessing store:', error)
+    }
     store = { cart: [], wishlist: [], compareList: [], user: null }
   }
   
@@ -43,7 +46,9 @@ const Header = () => {
       }
       navigate('/')
     } catch (error) {
-      console.error('Logout error:', error)
+      if (import.meta.env.DEV) {
+        console.error('Logout error:', error)
+      }
       navigate('/')
     }
   }
@@ -62,7 +67,7 @@ const Header = () => {
         {/* Top Bar */}
         <div className="hidden md:flex items-center justify-between py-2 text-sm text-gray-600 border-b">
           <div className="flex items-center gap-4">
-            <span>Free shipping on orders over $100</span>
+            <span>Free shipping on orders over {formatCurrency(FREE_SHIPPING_THRESHOLD)}</span>
             <span>•</span>
             <span>30-day return policy</span>
           </div>

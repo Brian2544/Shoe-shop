@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { useStore } from '../store/store'
 import { X, ShoppingCart, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { formatCurrency } from '../lib/currency'
 
 const Compare = () => {
   const { compareList, removeFromCompare, addToCart } = useStore()
@@ -69,10 +70,10 @@ const Compare = () => {
                 <td className="p-4 font-semibold">Price</td>
                 {compareList.map((product) => (
                   <td key={product.id} className="p-4 text-center">
-                    <span className="text-xl font-bold text-primary-orange">${product.price}</span>
+                    <span className="text-xl font-bold text-primary-orange">{formatCurrency(product.price)}</span>
                     {product.original_price && (
                       <span className="text-sm text-gray-400 line-through ml-2">
-                        ${product.original_price}
+                        {formatCurrency(product.original_price)}
                       </span>
                     )}
                   </td>

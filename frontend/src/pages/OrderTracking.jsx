@@ -5,6 +5,7 @@ import { Package, CheckCircle, Truck, MapPin } from 'lucide-react'
 import api from '../services/api'
 import { io } from 'socket.io-client'
 import { config } from '../config'
+import { formatCurrency } from '../lib/currency'
 
 const OrderTracking = () => {
   const [searchParams] = useSearchParams()
@@ -134,19 +135,19 @@ const OrderTracking = () => {
               <div className="border-t pt-4 space-y-2">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Subtotal</span>
-                  <span className="font-semibold">${order.subtotal}</span>
+                  <span className="font-semibold">{formatCurrency(order.subtotal)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Shipping</span>
-                  <span className="font-semibold">${order.shipping_cost}</span>
+                  <span className="font-semibold">{formatCurrency(order.shipping_cost)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Tax</span>
-                  <span className="font-semibold">${order.tax}</span>
+                  <span className="font-semibold">{formatCurrency(order.tax)}</span>
                 </div>
                 <div className="border-t pt-2 flex justify-between text-lg font-bold">
                   <span>Total</span>
-                  <span className="text-primary-orange">${order.total}</span>
+                  <span className="text-primary-orange">{formatCurrency(order.total)}</span>
                 </div>
               </div>
 
@@ -165,7 +166,7 @@ const OrderTracking = () => {
                           <p className="font-semibold text-sm">{item.name}</p>
                           <p className="text-xs text-gray-600">Size: {item.size} x {item.quantity}</p>
                           <p className="text-sm font-semibold text-primary-orange">
-                            ${(item.price * item.quantity).toFixed(2)}
+                            {formatCurrency(item.price * item.quantity)}
                           </p>
                         </div>
                       </div>

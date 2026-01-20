@@ -3,6 +3,7 @@ import { X } from 'lucide-react'
 import { useStore } from '../../store/store'
 import { useQuery } from 'react-query'
 import api from '../../services/api'
+import { formatCurrency, KSH_PER_USD } from '../../lib/currency'
 
 const FilterSidebar = ({ isOpen, onClose }) => {
   const { filters, setFilters, clearFilters } = useStore()
@@ -31,11 +32,11 @@ const FilterSidebar = ({ isOpen, onClose }) => {
   })
 
   const priceRanges = [
-    { label: 'Under $50', value: '0-50' },
-    { label: '$50 - $100', value: '50-100' },
-    { label: '$100 - $200', value: '100-200' },
-    { label: '$200 - $300', value: '200-300' },
-    { label: 'Over $300', value: '300-' },
+    { label: `Under ${formatCurrency(50 * KSH_PER_USD)}`, value: `0-${50 * KSH_PER_USD}` },
+    { label: `${formatCurrency(50 * KSH_PER_USD)} - ${formatCurrency(100 * KSH_PER_USD)}`, value: `${50 * KSH_PER_USD}-${100 * KSH_PER_USD}` },
+    { label: `${formatCurrency(100 * KSH_PER_USD)} - ${formatCurrency(200 * KSH_PER_USD)}`, value: `${100 * KSH_PER_USD}-${200 * KSH_PER_USD}` },
+    { label: `${formatCurrency(200 * KSH_PER_USD)} - ${formatCurrency(300 * KSH_PER_USD)}`, value: `${200 * KSH_PER_USD}-${300 * KSH_PER_USD}` },
+    { label: `Over ${formatCurrency(300 * KSH_PER_USD)}`, value: `${300 * KSH_PER_USD}-` },
   ]
 
   const colors = ['Black', 'White', 'Red', 'Blue', 'Green', 'Brown', 'Gray', 'Pink', 'Yellow']

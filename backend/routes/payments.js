@@ -16,7 +16,7 @@ paypal.configure({
 // Create Stripe payment intent
 router.post('/stripe/create-intent', async (req, res) => {
   try {
-    const { amount, currency = 'usd' } = req.body
+    const { amount, currency = 'kes' } = req.body
 
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(amount * 100), // Convert to cents
@@ -35,7 +35,7 @@ router.post('/stripe/create-intent', async (req, res) => {
 // Create PayPal payment
 router.post('/paypal/create', (req, res) => {
   try {
-    const { amount, currency = 'USD' } = req.body
+    const { amount, currency = 'KES' } = req.body
 
     const create_payment_json = {
       intent: 'sale',

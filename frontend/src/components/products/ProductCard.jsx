@@ -4,6 +4,7 @@ import { Heart, ShoppingCart, Eye } from 'lucide-react'
 import { useStore } from '../../store/store'
 import { useState } from 'react'
 import toast from 'react-hot-toast'
+import { formatCurrency } from '../../lib/currency'
 
 const ProductCard = ({ product }) => {
   const { addToCart, addToWishlist, wishlist, removeFromWishlist } = useStore()
@@ -89,11 +90,11 @@ const ProductCard = ({ product }) => {
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <span className="text-xl font-bold text-primary-orange">
-                ${product.price}
+                {formatCurrency(product.price)}
               </span>
               {product.original_price && (
                 <span className="text-sm text-gray-400 line-through">
-                  ${product.original_price}
+                  {formatCurrency(product.original_price)}
                 </span>
               )}
             </div>

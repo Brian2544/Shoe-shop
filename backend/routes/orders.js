@@ -36,6 +36,7 @@ router.post('/', async (req, res) => {
         subtotal,
         tax,
         shipping_cost: shippingCost || 0,
+        currency_code: 'KES',
       })
       .select()
       .single()

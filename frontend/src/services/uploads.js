@@ -1,56 +1,35 @@
 import api from './api'
 
+const MAX_FILE_SIZE = 10 * 1024 * 1024
+const ALLOWED_TYPES = ['image/jpeg', 'image/png']
+
 export const uploadProductImage = async (file, productId, options = {}) => {
   if (!file) {
     throw new Error('No file selected')
   }
 
-  const signatureResponse = await api.post('/uploads/cloudinary-signature', {
-    productId,
-  })
-
-  if (!signatureResponse.data?.success) {
-    throw new Error(signatureResponse.data?.message || 'Failed to get upload signature')
+  if (!ALLOWED_TYPES.includes(file.type)) {
+    throw new Error('Only JPEG or PNG images are allowed')
   }
 
-  const { timestamp, signature, apiKey, cloudName, folder } = signatureResponse.data.data
+  if (file.size > MAX_FILE_SIZE) {
+    throw new Error('Image must be smaller than 10MB')
+  }
 
   const formData = new FormData()
   formData.append('file', file)
-  formData.append('api_key', apiKey)
-  formData.append('timestamp', timestamp)
-  formData.append('signature', signature)
-  formData.append('folder', folder)
-
-  const uploadResponse = await fetch(
-    `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-    {
-      method: 'POST',
-      body: formData,
-    }
-  )
-
-  const uploadData = await uploadResponse.json()
-
-  if (!uploadResponse.ok) {
-    throw new Error(uploadData?.error?.message || 'Cloudinary upload failed')
+  if (options.altText) {
+    formData.append('alt_text', options.altText)
+  }
+  if (typeof options.position === 'number') {
+    formData.append('position', String(options.position))
   }
 
-  const payload = {
-    url: uploadData.secure_url || uploadData.url,
-    public_id: uploadData.public_id,
-    width: uploadData.width || null,
-    height: uploadData.height || null,
-    format: uploadData.format || null,
-    alt_text: options.altText || null,
-    position: typeof options.position === 'number' ? options.position : 0,
+  const uploadResponse = await api.post(`/uploads/product-image/${productId}`, formData)
+
+  if (!uploadResponse.data?.success) {
+    throw new Error(uploadResponse.data?.message || 'Failed to upload image')
   }
 
-  const saveResponse = await api.post(`/admin/products/${productId}/images`, payload)
-
-  if (!saveResponse.data?.success) {
-    throw new Error(saveResponse.data?.message || 'Failed to save image metadata')
-  }
-
-  return saveResponse.data.data
+  return uploadResponse.data.data
 }

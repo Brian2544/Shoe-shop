@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import api from '../services/api'
 import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
 import { Shield } from 'lucide-react'
@@ -24,23 +25,15 @@ const AdminLogin = () => {
 
       if (authError) throw authError
 
-      // Check if user is admin by checking their profile
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', authData.user.id)
-        .single()
-
-      if (profileError) {
-        // If profile doesn't exist or error, check user metadata
-        const userRole = authData.user.user_metadata?.role || authData.user.app_metadata?.role
-        if (userRole !== 'admin') {
-          await supabase.auth.signOut()
+      // Validate admin access via backend RBAC
+      try {
+        const response = await api.get('/admin/me')
+        if (!response.data?.success) {
           throw new Error('Access denied. Admin privileges required.')
         }
-      } else if (profile?.role !== 'admin') {
+      } catch (error) {
         await supabase.auth.signOut()
-        throw new Error('Access denied. Admin privileges required.')
+        throw new Error(error.response?.data?.message || 'Access denied. Admin privileges required.')
       }
 
       toast.success('Admin login successful!')

@@ -1,11 +1,11 @@
 import { supabase } from '../config/supabase.js'
-import { isAdminEmail, ensureAdminRole } from '../lib/admin.js'
+import { ADMIN_BASE_ROLES, ensureBootstrapRoles, getUserRoles, hasAnyRole } from '../lib/rbac.js'
 
 /**
- * Middleware to verify admin authentication
- * Checks if user is authenticated and has admin role (via email list or DB role)
+ * Middleware to verify authentication
+ * Attaches user and roles to request
  */
-export const verifyAdmin = async (req, res, next) => {
+export const verifyAuth = async (req, res, next) => {
   try {
     // Get token from Authorization header
     const authHeader = req.headers.authorization
@@ -28,53 +28,63 @@ export const verifyAdmin = async (req, res, next) => {
       })
     }
 
-    const userEmail = user.email
+    const userEmail = (user.email || '').trim().toLowerCase()
+    await ensureBootstrapRoles()
 
-    // Primary check: Email-based admin detection (source of truth)
-    if (isAdminEmail(userEmail)) {
-      // Ensure role is set in DB for consistency
-      await ensureAdminRole(user.id, userEmail, supabase)
-      req.user = user
-      req.user.isAdmin = true
-      return next()
+    const roles = await getUserRoles(user.id)
+
+    let profileRole = null
+    try {
+      let { data: profile } = await supabase
+        .from('profiles')
+        .select('role, email')
+        .eq('id', user.id)
+        .single()
+
+      if (!profile) {
+        const { data: createdProfile } = await supabase
+          .from('profiles')
+          .upsert({
+            id: user.id,
+            email: userEmail,
+            role: 'user',
+          })
+          .select('role, email')
+          .single()
+        profile = createdProfile
+      }
+
+      if (profile?.email && profile.email !== userEmail) {
+        await supabase
+          .from('profiles')
+          .update({ email: userEmail })
+          .eq('id', user.id)
+      }
+
+      profileRole = profile?.role || null
+    } catch (error) {
+      profileRole = null
     }
 
-    // Fallback check: Check user metadata
-    const userRole = user.user_metadata?.role || user.app_metadata?.role
-    
-    if (userRole === 'admin') {
-      req.user = user
-      req.user.isAdmin = true
-      return next()
+    const derivedRoles = new Set(roles)
+    if (profileRole) {
+      if (profileRole === 'super_admin') {
+        derivedRoles.add('super_admin')
+      } else if (profileRole === 'admin') {
+        derivedRoles.add('admin')
+        derivedRoles.add('admin_manager')
+      } else if (profileRole !== 'user') {
+        derivedRoles.add(profileRole)
+      }
     }
 
-    // Fallback check: Check profiles table
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('role, email')
-      .eq('id', user.id)
-      .single()
-
-    // If profile exists and role is admin, allow access
-    if (!profileError && profile?.role === 'admin') {
-      req.user = user
-      req.user.isAdmin = true
-      return next()
+    req.user = {
+      ...user,
+      roles: Array.from(derivedRoles),
+      isAdmin: hasAnyRole(Array.from(derivedRoles), ADMIN_BASE_ROLES),
     }
 
-    // If email is in admin list but role not set, set it and allow
-    if (isAdminEmail(profile?.email || userEmail)) {
-      await ensureAdminRole(user.id, userEmail, supabase)
-      req.user = user
-      req.user.isAdmin = true
-      return next()
-    }
-
-    // All checks failed
-    return res.status(403).json({ 
-      success: false, 
-      message: 'Access denied. Admin privileges required.' 
-    })
+    return next()
   } catch (error) {
     console.error('Auth middleware error:', error)
     res.status(500).json({ 
@@ -83,3 +93,28 @@ export const verifyAdmin = async (req, res, next) => {
     })
   }
 }
+
+export const requireRoles = (roles = []) => {
+  return async (req, res, next) => {
+    try {
+      await verifyAuth(req, res, async () => {
+        if (hasAnyRole(req.user.roles, roles)) {
+          return next()
+        }
+
+        return res.status(403).json({
+          success: false,
+          message: 'Access denied. Admin privileges required.',
+        })
+      })
+    } catch (error) {
+      console.error('RBAC middleware error:', error)
+      res.status(500).json({ success: false, message: 'Authorization error' })
+    }
+  }
+}
+
+/**
+ * Backwards compatible admin middleware
+ */
+export const verifyAdmin = requireRoles(ADMIN_BASE_ROLES)

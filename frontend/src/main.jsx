@@ -6,17 +6,23 @@ import { QueryClient, QueryClientProvider } from 'react-query'
 import App from './App.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
 
-console.log('🚀 Starting React application...')
+if (import.meta.env.DEV) {
+  console.log('🚀 Starting React application...')
+}
 
 // Create root element if it doesn't exist
 let rootElement = document.getElementById('root')
 if (!rootElement) {
-  console.warn('⚠️ Root element not found, creating it...')
+  if (import.meta.env.DEV) {
+    console.warn('⚠️ Root element not found, creating it...')
+  }
   rootElement = document.createElement('div')
   rootElement.id = 'root'
   document.body.appendChild(rootElement)
 }
-console.log('✅ Root element found')
+if (import.meta.env.DEV) {
+  console.log('✅ Root element found')
+}
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -28,7 +34,9 @@ const queryClient = new QueryClient({
 })
 
 try {
-  console.log('📦 Rendering React app...')
+  if (import.meta.env.DEV) {
+    console.log('📦 Rendering React app...')
+  }
   const root = ReactDOM.createRoot(rootElement)
   root.render(
     <React.StrictMode>
@@ -41,7 +49,9 @@ try {
       </ErrorBoundary>
     </React.StrictMode>
   )
-  console.log('✅ React app rendered successfully!')
+  if (import.meta.env.DEV) {
+    console.log('✅ React app rendered successfully!')
+  }
 } catch (error) {
   console.error('❌ Failed to render app:', error)
   rootElement.innerHTML = `

@@ -7,8 +7,10 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
 let supabase
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('Supabase credentials not found. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env file')
-  console.warn('App will run in demo mode without authentication')
+  if (import.meta.env.DEV) {
+    console.warn('Supabase credentials not found. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env file')
+    console.warn('App will run in demo mode without authentication')
+  }
   
   // Create a mock client that won't crash
   const createMockQuery = () => ({

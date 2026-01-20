@@ -4,14 +4,13 @@ import { CheckCircle, XCircle, AlertCircle, Loader } from 'lucide-react'
 import { config, checkEnvConfig } from '../config'
 import api from '../services/api'
 import { supabase } from '../lib/supabase'
-import { isAdminEmail, getAdminEmails } from '../lib/admin'
 
 const Debug = () => {
   const [backendHealth, setBackendHealth] = useState({ status: 'checking', error: null })
   const [backendConfig, setBackendConfig] = useState(null)
   const [lastApiError, setLastApiError] = useState(null)
   const [productsCount, setProductsCount] = useState(null)
-  const [authStatus, setAuthStatus] = useState({ isAuthenticated: false, user: null, isAdmin: false })
+  const [authStatus, setAuthStatus] = useState({ isAuthenticated: false, user: null, isAdmin: false, roles: [] })
 
   const envConfig = checkEnvConfig()
 
@@ -40,7 +39,9 @@ const Debug = () => {
         setBackendConfig(response.data)
       } catch (error) {
         // Config endpoint might not exist, that's ok
-        console.warn('Config status endpoint not available:', error.message)
+        if (import.meta.env.DEV) {
+          console.warn('Config status endpoint not available:', error.message)
+        }
       }
     }
     
@@ -57,20 +58,34 @@ const Debug = () => {
         const { data: { session } } = await supabase.auth.getSession()
         if (session?.user) {
           const userEmail = session.user.email
-          const isAdmin = isAdminEmail(userEmail)
+          let isAdmin = false
+          let roles = []
+          try {
+            const adminCheck = await api.get('/admin/me')
+            if (adminCheck.data?.success) {
+              isAdmin = true
+              roles = adminCheck.data?.data?.roles || []
+            }
+          } catch (error) {
+            isAdmin = false
+            roles = []
+          }
           setAuthStatus({
             isAuthenticated: true,
             user: {
               email: userEmail,
               id: session.user.id,
             },
-            isAdmin
+            isAdmin,
+            roles,
           })
         } else {
-          setAuthStatus({ isAuthenticated: false, user: null, isAdmin: false })
+          setAuthStatus({ isAuthenticated: false, user: null, isAdmin: false, roles: [] })
         }
       } catch (error) {
-        console.error('Error checking auth:', error)
+        if (import.meta.env.DEV) {
+          console.error('Error checking auth:', error)
+        }
       }
     }
     
@@ -96,7 +111,9 @@ const Debug = () => {
         if (error) throw error
         setProductsCount(data?.length || 0)
       } catch (error) {
-        console.error('Error fetching products count:', error)
+        if (import.meta.env.DEV) {
+          console.error('Error fetching products count:', error)
+        }
         setProductsCount('error')
       }
     }
@@ -221,11 +238,17 @@ const Debug = () => {
                 </>
               )}
               <div className="flex items-center justify-between">
-                <span className="text-gray-600">Admin Emails Configured:</span>
-                <span className={getAdminEmails().length > 0 ? 'text-green-600' : 'text-yellow-600'}>
-                  {getAdminEmails().length > 0 ? `${getAdminEmails().length} email(s)` : 'Not set'}
+                <span className="text-gray-600">Admin API Access:</span>
+                <span className={authStatus.isAdmin ? 'text-green-600 font-semibold' : 'text-gray-600'}>
+                  {authStatus.isAdmin ? 'Yes ✓' : 'No'}
                 </span>
               </div>
+              {authStatus.roles.length > 0 && (
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-600">Admin Roles:</span>
+                  <span className="text-gray-700 text-sm">{authStatus.roles.join(', ')}</span>
+                </div>
+              )}
             </div>
           </div>
 

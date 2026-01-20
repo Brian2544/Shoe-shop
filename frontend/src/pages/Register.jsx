@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { isAdminEmail } from '../lib/admin'
 import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
 
@@ -49,26 +48,19 @@ const Register = () => {
 
       if (error) throw error
 
-      // Create profile (trigger will also create it, but we set role here if admin)
+      // Create profile (trigger will also create it, but we set profile fields here)
       if (data.user) {
-        const role = isAdminEmail(formData.email) ? 'admin' : 'user'
         await supabase.from('profiles').upsert({
           id: data.user.id,
           email: formData.email,
           first_name: formData.firstName,
           last_name: formData.lastName,
-          role: role,
         })
       }
 
       toast.success('Account created! Please check your email to verify.')
       
-      // If admin, redirect to admin login, otherwise regular login
-      if (isAdminEmail(formData.email)) {
-        navigate('/login', { state: { message: 'Admin account created. Please log in.' } })
-      } else {
-        navigate('/login')
-      }
+      navigate('/login')
     } catch (error) {
       toast.error(error.message || 'Failed to create account')
     } finally {
@@ -154,7 +146,7 @@ const Register = () => {
             <input type="checkbox" required className="w-4 h-4 text-primary-orange" />
             <span className="text-sm text-gray-600">
               I agree to the{' '}
-              <Link to="#" className="text-primary-orange hover:underline">
+              <Link to="/terms" className="text-primary-orange hover:underline">
                 Terms & Conditions
               </Link>
             </span>

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { isAdminEmail } from '../lib/admin'
+import api from '../services/api'
 import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
 
@@ -23,9 +23,15 @@ const Login = () => {
 
       if (error) throw error
 
-      // Check if user is admin and redirect accordingly
-      const userEmail = data.user?.email || email
-      if (isAdminEmail(userEmail)) {
+      let isAdmin = false
+      try {
+        const adminCheck = await api.get('/admin/me')
+        isAdmin = !!adminCheck.data?.success
+      } catch (error) {
+        isAdmin = false
+      }
+
+      if (isAdmin) {
         toast.success('Admin login successful!')
         navigate('/admin/dashboard')
       } else {
@@ -78,7 +84,7 @@ const Login = () => {
               <input type="checkbox" className="w-4 h-4 text-primary-orange" />
               <span className="text-sm text-gray-600">Remember me</span>
             </label>
-            <Link to="#" className="text-sm text-primary-orange hover:underline">
+            <Link to="/forgot-password" className="text-sm text-primary-orange hover:underline">
               Forgot password?
             </Link>
           </div>

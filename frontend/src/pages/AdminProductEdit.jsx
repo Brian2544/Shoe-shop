@@ -13,6 +13,8 @@ const AdminProductEdit = () => {
   const uploadInputRef = useRef(null)
   const [images, setImages] = useState([])
   const [altText, setAltText] = useState('')
+  const [description, setDescription] = useState('')
+  const [isSavingDescription, setIsSavingDescription] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const [isDeleting, setIsDeleting] = useState(null)
   const [replaceTarget, setReplaceTarget] = useState(null)
@@ -33,6 +35,7 @@ const AdminProductEdit = () => {
 
   useEffect(() => {
     if (!productData) return
+    setDescription(productData.description || '')
     if (productData.imageRecords?.length) {
       setImages(productData.imageRecords)
       return
@@ -51,7 +54,10 @@ const AdminProductEdit = () => {
   }, [productData])
 
   const handleUpload = async (file) => {
-    if (!file) return
+    if (!file) {
+      toast.error('Please select an image to upload.')
+      return
+    }
     setIsUploading(true)
     try {
       const record = await uploadProductImage(file, id, {
@@ -62,7 +68,8 @@ const AdminProductEdit = () => {
       setAltText('')
       toast.success('Image uploaded')
     } catch (error) {
-      toast.error(error.message || 'Failed to upload image')
+      const message = error.response?.data?.message || error.message || 'Failed to upload image'
+      toast.error(message)
     } finally {
       setIsUploading(false)
       if (uploadInputRef.current) {
@@ -93,7 +100,11 @@ const AdminProductEdit = () => {
   }
 
   const handleReplaceUpload = async (file) => {
-    if (!file || !replaceTarget) return
+    if (!file) {
+      toast.error('Please select an image to upload.')
+      return
+    }
+    if (!replaceTarget) return
     setIsUploading(true)
     try {
       const record = await uploadProductImage(file, id, {
@@ -113,13 +124,35 @@ const AdminProductEdit = () => {
       }
       toast.success('Image replaced')
     } catch (error) {
-      toast.error(error.message || 'Failed to replace image')
+      const message = error.response?.data?.message || error.message || 'Failed to replace image'
+      toast.error(message)
     } finally {
       setReplaceTarget(null)
       setIsUploading(false)
       if (replaceInputRef.current) {
         replaceInputRef.current.value = ''
       }
+    }
+  }
+
+  const handleSaveDescription = async () => {
+    if (!description && description !== '') return
+    if (description && description.length > 1000) {
+      toast.error('Description is long (over 1000 characters). Consider shortening it.')
+    }
+    setIsSavingDescription(true)
+    try {
+      const response = await api.patch(`/admin/products/${id}`, {
+        description: description?.trim() || null,
+      })
+      if (response.data?.success) {
+        toast.success('Description updated')
+      }
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to update description'
+      toast.error(message)
+    } finally {
+      setIsSavingDescription(false)
     }
   }
 
@@ -191,7 +224,7 @@ const AdminProductEdit = () => {
               <input
                 ref={uploadInputRef}
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/png"
                 onChange={(e) => handleUpload(e.target.files?.[0])}
                 className="hidden"
               />
@@ -207,6 +240,26 @@ const AdminProductEdit = () => {
                 JPEG/PNG recommended. Max 10MB.
               </p>
             </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Product Description</h2>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Add a description (optional)"
+            className="input-field w-full min-h-[140px]"
+          />
+          <div className="mt-4 flex justify-end">
+            <button
+              type="button"
+              onClick={handleSaveDescription}
+              disabled={isSavingDescription}
+              className="btn-primary disabled:opacity-60"
+            >
+              {isSavingDescription ? 'Saving...' : 'Save Description'}
+            </button>
           </div>
         </div>
 
@@ -273,7 +326,7 @@ const AdminProductEdit = () => {
       <input
         ref={replaceInputRef}
         type="file"
-        accept="image/*"
+        accept="image/jpeg,image/png"
         onChange={(e) => handleReplaceUpload(e.target.files?.[0])}
         className="hidden"
       />

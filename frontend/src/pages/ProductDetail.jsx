@@ -5,6 +5,7 @@ import { useQuery } from 'react-query'
 import api from '../services/api'
 import { useStore } from '../store/store'
 import toast from 'react-hot-toast'
+import { formatCurrency, FREE_SHIPPING_THRESHOLD } from '../lib/currency'
 import { 
   Heart, 
   ShoppingCart, 
@@ -142,7 +143,9 @@ const ProductDetail = () => {
           url: window.location.href,
         })
       } catch (err) {
-        console.log('Error sharing:', err)
+        if (import.meta.env.DEV) {
+          console.log('Error sharing:', err)
+        }
       }
     } else {
       navigator.clipboard.writeText(window.location.href)
@@ -232,10 +235,10 @@ const ProductDetail = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-4 mb-6">
-                  <span className="text-3xl font-bold text-primary-orange">${product.price}</span>
+                  <span className="text-3xl font-bold text-primary-orange">{formatCurrency(product.price)}</span>
                   {product.original_price && (
                     <>
-                      <span className="text-xl text-gray-400 line-through">${product.original_price}</span>
+                      <span className="text-xl text-gray-400 line-through">{formatCurrency(product.original_price)}</span>
                       <span className="bg-primary-orange text-white px-2 py-1 rounded text-sm font-semibold">
                         {Math.round(((product.original_price - product.price) / product.original_price) * 100)}% OFF
                       </span>
@@ -269,7 +272,7 @@ const ProductDetail = () => {
                       </button>
                     ))}
                   </div>
-                  <Link to="#" className="text-sm text-primary-orange hover:underline mt-2 inline-block">
+                  <Link to="/size-guide" className="text-sm text-primary-orange hover:underline mt-2 inline-block">
                     Size Guide
                   </Link>
                 </div>
@@ -374,7 +377,7 @@ const ProductDetail = () => {
                   <Truck className="w-6 h-6 text-secondary-green" />
                   <div>
                     <p className="font-semibold">Free Shipping</p>
-                    <p className="text-sm text-gray-600">On orders over $100</p>
+                    <p className="text-sm text-gray-600">On orders over {formatCurrency(FREE_SHIPPING_THRESHOLD)}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">

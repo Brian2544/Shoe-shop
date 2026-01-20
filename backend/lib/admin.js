@@ -1,6 +1,6 @@
 /**
- * Admin utilities for email-based admin detection
- * Uses environment variable ADMIN_EMAILS (comma-separated list)
+ * Admin seed utilities.
+ * Uses environment variables to identify bootstrap admin emails.
  */
 
 /**
@@ -17,7 +17,13 @@ const normalizeEmail = (email) => {
  * @returns {string[]} Array of normalized admin emails
  */
 export const getAdminEmails = () => {
-  const adminEmailsEnv = process.env.ADMIN_EMAILS || ''
+  const adminEmailsEnv = [
+    process.env.SUPER_ADMIN_EMAIL || '',
+    process.env.ADMIN_EMAILS || '',
+  ]
+    .filter(Boolean)
+    .join(',')
+
   const fallbackAdmins = ['brianomomdi@gmail.com']
 
   const normalized = adminEmailsEnv
@@ -26,7 +32,7 @@ export const getAdminEmails = () => {
     .filter(email => email.length > 0)
 
   if (normalized.length > 0) {
-    return normalized
+    return Array.from(new Set(normalized))
   }
 
   return fallbackAdmins.map(email => normalizeEmail(email))
@@ -44,34 +50,4 @@ export const isAdminEmail = (email) => {
   const adminEmails = getAdminEmails()
   
   return adminEmails.includes(normalizedEmail)
-}
-
-/**
- * Ensure admin role is set in profiles table for admin emails
- * This should be called after user signup or login
- * @param {string} userId - User UUID
- * @param {string} email - User email
- * @param {object} supabase - Supabase client with service role
- */
-export const ensureAdminRole = async (userId, email, supabase) => {
-  if (!isAdminEmail(email)) return false
-  
-  try {
-    // Update profile role to admin if email is in admin list
-    const { error } = await supabase
-      .from('profiles')
-      .update({ role: 'admin' })
-      .eq('id', userId)
-      .eq('email', email)
-    
-    if (error) {
-      console.error('Error setting admin role:', error)
-      return false
-    }
-    
-    return true
-  } catch (error) {
-    console.error('Error in ensureAdminRole:', error)
-    return false
-  }
 }

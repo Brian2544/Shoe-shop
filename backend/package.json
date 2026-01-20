@@ -4,7 +4,9 @@
   "type": "module",
   "scripts": {
     "dev": "node --watch server.js",
-    "start": "node server.js"
+    "start": "node server.js",
+    "seed:admin": "node scripts/seed_admin.js",
+    "db:migrate": "node scripts/migrate_db.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.38.5",

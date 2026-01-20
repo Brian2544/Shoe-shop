@@ -19,10 +19,13 @@ import AdminDashboard from './pages/AdminDashboard'
 import AdminProductEdit from './pages/AdminProductEdit'
 import Debug from './pages/Debug'
 import NotFound from './pages/NotFound'
+import InfoPage from './pages/InfoPage'
 import { Toaster } from 'react-hot-toast'
 
 function App() {
-  console.log('📱 App component rendering...')
+  if (import.meta.env.DEV) {
+    console.log('📱 App component rendering...')
+  }
   
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#ffffff' }}>
@@ -58,6 +61,13 @@ function App() {
               </AdminRoute>
             } 
           />
+          <Route path="/terms" element={<InfoPage />} />
+          <Route path="/privacy" element={<InfoPage />} />
+          <Route path="/cookies" element={<InfoPage />} />
+          <Route path="/returns" element={<InfoPage />} />
+          <Route path="/shipping" element={<InfoPage />} />
+          <Route path="/forgot-password" element={<InfoPage />} />
+          <Route path="/size-guide" element={<InfoPage />} />
           <Route path="/debug" element={<Debug />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

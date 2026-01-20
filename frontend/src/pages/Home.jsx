@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight, Truck, Shield, HeadphonesIcon, Star, TrendingUp } from 'lucide-react'
+import { formatCurrency, FREE_SHIPPING_THRESHOLD } from '../lib/currency'
 
 const Home = () => {
-  console.log('🏠 Home component rendering...')
+  if (import.meta.env.DEV) {
+    console.log('🏠 Home component rendering...')
+  }
   const [featuredProducts, setFeaturedProducts] = useState([])
   const [loading, setLoading] = useState(false)
 
@@ -11,7 +14,7 @@ const Home = () => {
     {
       icon: Truck,
       title: 'Free Shipping',
-      description: 'On orders over $100',
+      description: `On orders over ${formatCurrency(FREE_SHIPPING_THRESHOLD)}`,
       color: 'bg-primary-orange'
     },
     {

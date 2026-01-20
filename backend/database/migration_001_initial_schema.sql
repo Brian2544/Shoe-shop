@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS products (
   description TEXT,
   price DECIMAL(10, 2) NOT NULL,
   original_price DECIMAL(10, 2),
+  currency_code TEXT DEFAULT 'KES',
   images TEXT[],
   gender VARCHAR(20),
   shoe_type VARCHAR(50),
@@ -82,6 +83,7 @@ CREATE TABLE IF NOT EXISTS orders (
   subtotal DECIMAL(10, 2) NOT NULL,
   tax DECIMAL(10, 2) DEFAULT 0,
   shipping_cost DECIMAL(10, 2) DEFAULT 0,
+  currency_code TEXT DEFAULT 'KES',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -95,6 +97,7 @@ CREATE TABLE IF NOT EXISTS order_items (
   product_id UUID REFERENCES products(id),
   quantity INTEGER NOT NULL DEFAULT 1,
   price DECIMAL(10, 2) NOT NULL,
+  currency_code TEXT DEFAULT 'KES',
   size VARCHAR(20),
   color VARCHAR(50),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()

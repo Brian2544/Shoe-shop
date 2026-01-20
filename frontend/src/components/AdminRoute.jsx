@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { Navigate } from 'react-router-dom'
+import { Navigate, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { isAdminEmail } from '../lib/admin'
+import api from '../services/api'
 import { Loader } from 'lucide-react'
 
 /**
@@ -12,6 +12,7 @@ const AdminRoute = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true)
   const [isAdmin, setIsAdmin] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
 
   useEffect(() => {
     const checkAdminAccess = async () => {
@@ -27,32 +28,25 @@ const AdminRoute = ({ children }) => {
 
         setIsAuthenticated(true)
 
-        // Check if email is in admin list
-        const userEmail = session.user?.email
-        if (userEmail && isAdminEmail(userEmail)) {
-          setIsAdmin(true)
-        } else {
-          // Fallback: Check profile role
-          try {
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('role, email')
-              .eq('id', session.user.id)
-              .single()
-
-            if (profile?.role === 'admin' || isAdminEmail(profile?.email || userEmail)) {
-              setIsAdmin(true)
-            } else {
-              setIsAdmin(false)
-            }
-          } catch (error) {
-            console.error('Error checking profile:', error)
+        try {
+          const response = await api.get('/admin/me')
+          if (response.data?.success) {
+            setIsAdmin(true)
+            setErrorMessage('')
+          } else {
             setIsAdmin(false)
+            setErrorMessage('Not authorized to access admin dashboard.')
           }
+        } catch (error) {
+          setIsAdmin(false)
+          setErrorMessage(error.response?.data?.message || 'Not authorized to access admin dashboard.')
         }
       } catch (error) {
-        console.error('Error checking admin access:', error)
+        if (import.meta.env.DEV) {
+          console.error('Error checking admin access:', error)
+        }
         setIsAdmin(false)
+        setErrorMessage('Unable to verify admin access.')
       } finally {
         setIsLoading(false)
       }
@@ -86,7 +80,17 @@ const AdminRoute = ({ children }) => {
   }
 
   if (!isAdmin) {
-    return <Navigate to="/" replace />
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Access restricted</h2>
+          <p className="text-gray-600 mb-4">{errorMessage || 'Admin privileges required.'}</p>
+          <Link to="/" className="btn-primary inline-flex items-center justify-center">
+            Back to home
+          </Link>
+        </div>
+      </div>
+    )
   }
 
   return children

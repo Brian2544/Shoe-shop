@@ -13,13 +13,19 @@ const api = axios.create({
 // Add auth token to requests
 api.interceptors.request.use(async (config) => {
   try {
+    if (config.data instanceof FormData) {
+      delete config.headers['Content-Type']
+      delete config.headers['content-type']
+    }
     // Get Supabase session token
     const { data: { session } } = await supabase.auth.getSession()
     if (session?.access_token) {
       config.headers.Authorization = `Bearer ${session.access_token}`
     }
   } catch (error) {
-    console.warn('Failed to get auth token:', error)
+    if (import.meta.env.DEV) {
+      console.warn('Failed to get auth token:', error)
+    }
   }
   return config
 })
@@ -29,19 +35,21 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     // Log error without exposing secrets
-    if (error.response) {
-      console.error('API Error:', {
-        status: error.response.status,
-        url: error.config?.url,
-        message: error.response.data?.message || error.message,
-      })
-    } else if (error.request) {
-      console.error('API Request failed - no response:', {
-        url: error.config?.url,
-        message: 'Network error or backend unreachable',
-      })
-    } else {
-      console.error('API Error:', error.message)
+    if (import.meta.env.DEV) {
+      if (error.response) {
+        console.error('API Error:', {
+          status: error.response.status,
+          url: error.config?.url,
+          message: error.response.data?.message || error.message,
+        })
+      } else if (error.request) {
+        console.error('API Request failed - no response:', {
+          url: error.config?.url,
+          message: 'Network error or backend unreachable',
+        })
+      } else {
+        console.error('API Error:', error.message)
+      }
     }
     return Promise.reject(error)
   }

@@ -20,16 +20,16 @@ const Footer = () => {
               Your premier destination for quality footwear. We offer the latest trends in comfort and style.
             </p>
             <div style={{ display: 'flex', gap: '16px' }}>
-              <a href="#" style={{ color: '#D1D5DB' }}>
+              <a href="https://www.facebook.com" target="_blank" rel="noreferrer" style={{ color: '#D1D5DB' }}>
                 <Facebook style={{ width: '20px', height: '20px' }} />
               </a>
-              <a href="#" style={{ color: '#D1D5DB' }}>
+              <a href="https://www.x.com" target="_blank" rel="noreferrer" style={{ color: '#D1D5DB' }}>
                 <Twitter style={{ width: '20px', height: '20px' }} />
               </a>
-              <a href="#" style={{ color: '#D1D5DB' }}>
+              <a href="https://www.instagram.com" target="_blank" rel="noreferrer" style={{ color: '#D1D5DB' }}>
                 <Instagram style={{ width: '20px', height: '20px' }} />
               </a>
-              <a href="#" style={{ color: '#D1D5DB' }}>
+              <a href="https://www.youtube.com" target="_blank" rel="noreferrer" style={{ color: '#D1D5DB' }}>
                 <Youtube style={{ width: '20px', height: '20px' }} />
               </a>
             </div>
@@ -76,14 +76,14 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <a href="#" style={{ color: '#D1D5DB', textDecoration: 'none', fontSize: '14px' }}>
+                <Link to="/returns" style={{ color: '#D1D5DB', textDecoration: 'none', fontSize: '14px' }}>
                   Returns & Exchanges
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" style={{ color: '#D1D5DB', textDecoration: 'none', fontSize: '14px' }}>
+                <Link to="/shipping" style={{ color: '#D1D5DB', textDecoration: 'none', fontSize: '14px' }}>
                   Shipping Info
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -123,13 +123,13 @@ const Footer = () => {
             &copy; {new Date().getFullYear()} ShoeStore. All rights reserved.
           </p>
           <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap', justifyContent: 'center' }}>
-            <Link to="#" style={{ color: '#D1D5DB', textDecoration: 'none', fontSize: '14px' }}>
+            <Link to="/privacy" style={{ color: '#D1D5DB', textDecoration: 'none', fontSize: '14px' }}>
               Privacy Policy
             </Link>
-            <Link to="#" style={{ color: '#D1D5DB', textDecoration: 'none', fontSize: '14px' }}>
+            <Link to="/terms" style={{ color: '#D1D5DB', textDecoration: 'none', fontSize: '14px' }}>
               Terms of Service
             </Link>
-            <Link to="#" style={{ color: '#D1D5DB', textDecoration: 'none', fontSize: '14px' }}>
+            <Link to="/cookies" style={{ color: '#D1D5DB', textDecoration: 'none', fontSize: '14px' }}>
               Cookie Policy
             </Link>
           </div>

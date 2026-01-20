@@ -1,11 +1,15 @@
 // Load environment variables FIRST before any other imports
 import 'dotenv/config'
+import dotenv from 'dotenv'
+import path from 'path'
+import { fileURLToPath } from 'url'
 
 import express from 'express'
 import cors from 'cors'
 import { createServer } from 'http'
 import { Server } from 'socket.io'
 import { supabase } from './config/supabase.js'
+import { seedAdminUsers } from './scripts/seed_admin.js'
 
 // Import routes
 import productRoutes from './routes/products.js'
@@ -17,6 +21,12 @@ import marketingRoutes from './routes/marketing.js'
 import adminRoutes from './routes/admin.js'
 import uploadRoutes from './routes/uploads.js'
 import testRoutes from './routes/test.js'
+import { getCloudinaryConfig } from './config/cloudinary.js'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+dotenv.config({ path: path.resolve(__dirname, '.env') })
+dotenv.config({ path: path.resolve(__dirname, '..', '.env') })
 
 const app = express()
 const httpServer = createServer(app)
@@ -42,7 +52,7 @@ const PORT = process.env.PORT || 5000
 app.use(cors({
   origin: corsOrigin || (isProduction ? false : true), // Allow all origins in dev, specific in prod
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }))
 app.use(express.json())
@@ -162,6 +172,13 @@ io.on('connection', (socket) => {
 
 // Enhanced startup logging
 httpServer.listen(PORT, () => {
+  const cloudinaryConfig = getCloudinaryConfig()
+  console.log(`☁️ Cloudinary configured: ${cloudinaryConfig.isConfigured ? 'true' : 'false'}`)
+
+  seedAdminUsers()
+    .then(() => console.log('✅ Admin seed check complete'))
+    .catch((error) => console.warn('Admin seed skipped:', error.message))
+
   if (!isProduction) {
     console.log('='.repeat(50))
     console.log('✅ Backend Server Started Successfully')
